@@ -134,6 +134,20 @@ describe('Faye service', () => {
         });
     });
 
+    describe('hidden message not from appUser', () => {
+        it('should not increment unread count', () => {
+            const message = {
+                text: '@@@ Secret!',
+                source: {
+                    id: 123
+                },
+                role: 'appMaker'
+            };
+            mockedStore.dispatch(fayeService.handleConversationSubscription(message));
+            conversationActions.incrementUnreadCount.should.not.have.been.called;
+        });
+    });
+
     describe('subscribeConversation', () => {
         it('should call setFayeConversationSubcription', () => {
             mockedStore = createMockedStore(sandbox, getProps({

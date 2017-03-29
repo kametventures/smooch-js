@@ -8,6 +8,7 @@ import { addMessage, incrementUnreadCount, resetUnreadCount } from '../actions/c
 import { getMessages, disconnectFaye, handleConversationUpdated } from './conversation';
 import { showSettings, hideChannelPage, hideConnectNotification, showTypingIndicator, hideTypingIndicator } from './app';
 import { getDeviceId } from '../utils/device';
+import { isHiddenMessage } from '../utils/messages';
 import { ANIMATION_TIMINGS } from '../constants/styles';
 import { cancelTwilioLink } from './integrations';
 
@@ -63,7 +64,7 @@ export function handleConversationSubscription(message) {
             }
         }
 
-        if (message.role !== 'appUser') {
+        if (message.role !== 'appUser' && !isHiddenMessage(message)) {
             dispatch(incrementUnreadCount());
         }
     };
