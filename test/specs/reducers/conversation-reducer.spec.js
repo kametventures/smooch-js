@@ -19,6 +19,14 @@ const MESSAGE_2 = {
     name: 'Calm Chimpanzee',
     _id: '789101'
 };
+const HIDDEN_MESSAGE = {
+    text: '@@@ Secret!',
+    role: 'appUser',
+    received: 789.101,
+    authorId: '8a9445dadad4862c2322db52',
+    name: 'Calm Chimpanzee',
+    _id: '789101'
+};
 const MESSAGES = [MESSAGE_1, MESSAGE_2];
 const MESSAGE_FROM_APP_USER = {
     text: 'hey there!',
@@ -200,6 +208,16 @@ describe('Conversation reducer', () => {
             const beforeState = INITIAL_STATE;
             const afterState = ConversationReducer(beforeState, {
                 type: ADD_MESSAGE,
+                message: EMPTY_REPLY_ACTION
+            });
+
+            afterState.messages.should.eql(beforeState.messages);
+        });
+
+        it('should not add secret messages', () => {
+            const beforeState = INITIAL_STATE;
+            const afterState = ConversationReducer(beforeState, {
+                type: HIDDEN_MESSAGE,
                 message: EMPTY_REPLY_ACTION
             });
 

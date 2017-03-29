@@ -1,6 +1,7 @@
 import * as ConversationActions from '../actions/conversation-actions';
 import { RESET } from '../actions/common-actions';
 import { SEND_STATUS, GLOBAL_ACTION_TYPES } from '../constants/message';
+import { isHiddenMessage, filterHiddenMessages } from '../utils/messages';
 
 const INITIAL_STATE = {
     messages: [],
@@ -52,7 +53,6 @@ const addMessage = (messages, message) => {
     const replyActions = extractReplyActions(message);
 
     const hasText = (message.text && message.text.trim()) || (message.mediaUrl && message.mediaUrl.trim());
-    const isHidden = (message.text && message.text.indexOf('@@@') === 0);
 
     if (replyActions.length > 0 && !hasText) {
         // if the message contains reply actions and has no text,
@@ -60,7 +60,7 @@ const addMessage = (messages, message) => {
         return messages;
     }
 
-    if (isHidden) {
+    if (isHiddenMessage(message)) {
       return messages;
     }
 
@@ -140,22 +140,22 @@ export function ConversationReducer(state = INITIAL_STATE, action) {
         case ConversationActions.SET_CONVERSATION:
             return {
                 ...action.conversation,
-                messages: state.messages,
+                messages: filterHiddenMessages(state.messages),
                 replyActions: state.replyActions
             };
         case ConversationActions.SET_MESSAGES:
             return {
                 ...state,
-                messages: assignGroups(sortMessages(cleanUpMessages([...action.messages, ...preserveFailedMessages(state.messages)]))),
+                messages: assignGroups(filterHiddenMessages(sortMessages(cleanUpMessages([...action.messages, ...preserveFailedMessages(state.messages)])))),
                 replyActions: extractReplyActions(action.messages[action.messages.length - 1])
             };
         case ConversationActions.ADD_MESSAGES:
             return {
                 ...state,
-                messages: assignGroups(sortMessages(cleanUpMessages(action.append ?
+                messages: assignGroups(filterHiddenMessages(sortMessages(cleanUpMessages(action.append ?
                     [...state.messages, ...action.messages] :
                     [...action.messages, ...state.messages]
-                ))),
+                )))),
                 replyActions: extractReplyActions(action.messages[action.messages.length - 1])
             };
         case ConversationActions.ADD_MESSAGE:
@@ -165,7 +165,7 @@ export function ConversationReducer(state = INITIAL_STATE, action) {
             });
         case ConversationActions.REPLACE_MESSAGE:
             return Object.assign({}, state, {
-                messages: assignGroups(sortMessages(replaceMessage(state.messages, action.queryProps, action.message)))
+                messages: assignGroups(filterHiddenMessages(sortMessages(replaceMessage(state.messages, action.queryProps, action.message))))
             });
         case ConversationActions.REMOVE_MESSAGE:
             return Object.assign({}, state, {
